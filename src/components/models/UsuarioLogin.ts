@@ -6,3 +6,6 @@ export default interface UsuarioLogin {
     foto: string;
     token: string;
 }
+
+
+
