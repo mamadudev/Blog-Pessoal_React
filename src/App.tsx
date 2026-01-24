@@ -12,7 +12,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import Cadastro from './pages/cadastro/Cadastro'
 import Home from './pages/home/Home'
 import Login from './pages/login/Login'
-import Perfil from './pages/profil/Profil'
+import Profil from './pages/profil/Profil'
 import 'react-toastify/dist/ReactToastify.css'
 
 function App() {
@@ -35,7 +35,7 @@ function App() {
 							<Route path="/cadastrarpostagem" element={<FormPostagem />} />
 							<Route path="/editarpostagem/:id" element={<FormPostagem />} />
 							<Route path="/deletarpostagem/:id" element={<DeletarPostagem />} />
-							<Route path="/perfil" element={<Perfil />} />
+							<Route path="/perfil" element={<Profil />} />
 						</Routes>
 					</div>
 					<Footer />
