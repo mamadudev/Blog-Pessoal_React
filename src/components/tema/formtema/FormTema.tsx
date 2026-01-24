@@ -23,16 +23,16 @@ function FormTema() {
             await buscar(`/temas/${id}`, setTema, {
                 headers: { Authorization: token }
             })
-        } catch (error: any) {
-            if (error.toString().includes('403')) {
-                handleLogout()
+        } catch (error: unknown) {
+            if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
+                handleLogout();
             }
         }
     }
 
     useEffect(() => {
         if (token === '') {
-            alert('Você precisa estar logado!')
+            toastAlerta('Você precisa estar logado!', 'info')
             navigate('/')
         }
     }, [token])
@@ -63,28 +63,26 @@ function FormTema() {
                 await atualizar(`/temas`, tema, setTema, {
                     headers: { 'Authorization': token }
                 })
-                alert('O Tema foi atualizado com sucesso!')
-            } catch (error: any) {
-                if (error.toString().includes('401')) {
+                toastAlerta('O Tema foi atualizado com sucesso!', 'sucesso')
+            } catch (error: unknown) {
+                if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
                     handleLogout();
                 } else {
-                    alert('Erro ao atualizar o tema.')
+                    toastAlerta('Erro ao atualizar o tema.', 'erro')
                 }
-
             }
         } else {
             try {
                 await cadastrar(`/temas`, tema, setTema, {
                     headers: { 'Authorization': token }
                 })
-                alert('O Tema foi cadastrado com sucesso!')
-            } catch (error: any) {
-                if (error.toString().includes('401')) {
+                toastAlerta('O Tema foi cadastrado com sucesso!', 'sucesso')
+            } catch (error: unknown) {
+                if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
                     handleLogout();
                 } else {
-                    alert('Erro ao cadastrar o tema.')
+                    toastAlerta('Erro ao cadastrar o tema.', 'erro')
                 }
-
             }
         }
 
@@ -131,3 +129,19 @@ function FormTema() {
 }
 
 export default FormTema;
+
+function toastAlerta(mensagem: string, tipo: string) {
+    switch (tipo) {
+        case 'sucesso':
+            alert(`✅ ${mensagem}`);
+            break;
+        case 'erro':
+            alert(`❌ ${mensagem}`);
+            break;
+        case 'info':
+            alert(`ℹ️ ${mensagem}`);
+            break;
+        default:
+            alert(mensagem);
+    }
+}

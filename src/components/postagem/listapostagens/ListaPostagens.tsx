@@ -4,7 +4,8 @@ import { SyncLoader } from "react-spinners";
 import { AuthContext } from "../../../contexts/AuthContext";
 import type Postagem from "../../../models/Postagem";
 import { buscar } from "../../../services/Service";
-import CardPostagem from "../cardpostagem/CardPostagem";
+import CardPostagem from "../cardpostagem/Cardpostagem";
+
 
 function ListaPostagens() {
 
@@ -22,7 +23,7 @@ function ListaPostagens() {
             alert('Você precisa estar logado!')
             navigate('/')
         }
-    }, [token])
+    }, [token, navigate])
 
     useEffect(() => {
         buscarPostagens()    
@@ -36,9 +37,15 @@ function ListaPostagens() {
             await buscar('/postagens', setPostagens, {
                 headers: { Authorization: token }
             })
-        } catch (error: any) {
-            if (error.toString().includes('401')) {
-                handleLogout()
+        } catch (error: unknown) {
+            let errorMessage = '';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else {
+                errorMessage = String(error);
+            }
+            if (errorMessage.includes('401')) {
+                handleLogout();
             }
         }finally {
             setIsLoading(false)

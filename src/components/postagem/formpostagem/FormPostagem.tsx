@@ -1,10 +1,11 @@
-import { useContext, useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { useContext, useEffect, useState, useCallback, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { AuthContext } from "../../../contexts/AuthContext";
 import type Postagem from "../../../models/Postagem";
 import type Tema from "../../../models/Tema";
 import { atualizar, buscar, cadastrar } from "../../../services/Service";
+import { ToastAlerta } from "../../../utils/ToastAletrta";
 
 function FormPostagem() {
 
@@ -23,48 +24,48 @@ function FormPostagem() {
 
     const { id } = useParams<{ id: string }>()
 
-    async function buscarPostagemPorId(id: string) {
+    const buscarPostagemPorId = useCallback(async (id: string) => {
         try {
             await buscar(`/postagens/${id}`, setPostagem, {
                 headers: { Authorization: token }
             })
-        } catch (error: any) {
-            if (error.toString().includes('401')) {
+        } catch (error: unknown) {
+            if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
                 handleLogout()
             }
         }
-    }
+    }, [token, handleLogout]);
 
     async function buscarTemaPorId(id: string) {
         try {
             await buscar(`/temas/${id}`, setTema, {
                 headers: { Authorization: token }
             })
-        } catch (error: any) {
-            if (error.toString().includes('401')) {
+        } catch (error: unknown) {
+            if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
                 handleLogout()
             }
         }
     }
 
-    async function buscarTemas() {
+    const buscarTemas = useCallback(async () => {
         try {
             await buscar('/temas', setTemas, {
                 headers: { Authorization: token }
             })
-        } catch (error: any) {
-            if (error.toString().includes('401')) {
+        } catch (error: unknown) {
+            if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
                 handleLogout()
             }
         }
-    }
+    }, [token, handleLogout]);
 
     useEffect(() => {
         if (token === '') {
-            alert('Você precisa estar logado');
+            ToastAlerta('Você precisa estar logado', 'info');
             navigate('/');
         }
-    }, [token])
+    }, [navigate, token])
 
     useEffect(() => {
         buscarTemas()
@@ -72,22 +73,25 @@ function FormPostagem() {
         if (id !== undefined) {
             buscarPostagemPorId(id)
         }
-    }, [id])
+    }, [buscarPostagemPorId, buscarTemas, id])
 
-    useEffect(() => {
-        setPostagem({
-            ...postagem,
-            tema: tema,
-        })
-    }, [tema])
+
 
     function atualizarEstado(e: ChangeEvent<HTMLInputElement>) {
         setPostagem({
             ...postagem,
             [e.target.name]: e.target.value,
-            tema: tema,
             usuario: usuario,
         });
+    }
+
+    function handleTemaChange(e: ChangeEvent<HTMLSelectElement>) {
+        const temaId = e.currentTarget.value;
+        buscarTemaPorId(temaId);
+        setPostagem((prev) => ({
+            ...prev,
+            tema: temas.find((t) => String(t.id) === temaId) || prev.tema,
+        }));
     }
 
     function retornar() {
@@ -106,13 +110,13 @@ function FormPostagem() {
                     },
                 });
 
-                alert('Postagem atualizada com sucesso')
+                ToastAlerta('Postagem atualizada com sucesso', 'sucesso')
 
-            } catch (error: any) {
-                if (error.toString().includes('401')) {
+            } catch (error: unknown) {
+                if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
                     handleLogout()
                 } else {
-                    alert('Erro ao atualizar a Postagem')
+                    ToastAlerta('Erro ao atualizar a Postagem', 'erro')
                 }
             }
 
@@ -124,13 +128,13 @@ function FormPostagem() {
                     },
                 })
 
-                alert('Postagem cadastrada com sucesso');
+                ToastAlerta('Postagem cadastrada com sucesso', 'sucesso');
 
-            } catch (error: any) {
-                if (error.toString().includes('401')) {
+            } catch (error: unknown) {
+                if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
                     handleLogout()
                 } else {
-                    alert('Erro ao cadastrar a Postagem');
+                    ToastAlerta('Erro ao cadastrar a Postagem', 'erro');
                 }
             }
         }
@@ -175,18 +179,18 @@ function FormPostagem() {
                     />
                 </div>
                 <div className="flex flex-col gap-2">
-                    <p>Tema da Postagem</p>
-                    <select name="tema" id="tema" className='border p-2 border-slate-800 rounded' 
-                        onChange={(e) => buscarTemaPorId(e.currentTarget.value)}
+                    <label htmlFor="tema">Tema da Postagem</label>
+                    <select
+                        name="tema"
+                        id="tema"
+                        className='border p-2 border-slate-800 rounded'
+                        onChange={handleTemaChange}
+                        value={postagem.tema?.id || ''}
                     >
-                        <option value="" selected disabled>Selecione um Tema</option>
-                        
+                        <option value="" disabled>Selecione um Tema</option>
                         {temas.map((tema) => (
-                            <>
-                                <option value={tema.id} >{tema.descricao}</option>
-                            </>
+                            <option value={tema.id} key={tema.id}>{tema.descricao}</option>
                         ))}
-
                     </select>
                 </div>
                 <button 

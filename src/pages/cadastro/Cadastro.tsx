@@ -1,20 +1,20 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
+import type Usuario from "../../models/Usuario";
 import { cadastrarUsuario } from "../../services/Service";
+import { ToastAlerta } from "../../utils/ToastAletrta";
 
-interface Usuario {
-  id: number;
-  nome: string;
-  usuario: string;
-  senha: string;
-  foto: string;
-}
+
 
 function Cadastro() {
 
   const navigate = useNavigate()
   
+  function retornar(){
+    navigate('/')
+  }
+
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const[confirmarSenha, setConfirmarSenha] = useState<string>("")
@@ -26,10 +26,6 @@ function Cadastro() {
     senha: '',
     foto: ''
   })
-
-  function retornar(){
-    navigate('/')
-  }
   
   useEffect(() => {
     if (usuario.id !== 0){
@@ -58,12 +54,12 @@ function Cadastro() {
 
       try{
         await cadastrarUsuario(`/usuarios/cadastrar`, usuario, setUsuario)
-        alert('Usuário cadastrado com sucesso!')
+        ToastAlerta('Usuário cadastrado com sucesso!', 'sucesso')
       }catch{
-        alert('Erro ao cadastrar o usuário!')
+        ToastAlerta('Erro ao cadastrar o usuário!', 'erro')
       }
     }else{
-      alert('Dados do usuário inconsistentes! Verifique as informações do cadastro.')
+      ToastAlerta('Dados do usuário inconsistentes! Verifique as informações do cadastro.', 'erro')
       setUsuario({...usuario, senha: ''})
       setConfirmarSenha('')
     }

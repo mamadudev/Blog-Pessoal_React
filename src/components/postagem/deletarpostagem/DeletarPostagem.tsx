@@ -4,113 +4,118 @@ import { AuthContext } from "../../../contexts/AuthContext"
 import type Postagem from "../../../models/Postagem"
 import { buscar, deletar } from "../../../services/Service"
 import { ClipLoader } from "react-spinners"
+import { ToastAlerta } from "../../../utils/ToastAletrta"
 
 function DeletarPostagem() {
 
-  const navigate = useNavigate()
-  const { id } = useParams<{ id: string }>()
+    const navigate = useNavigate()
 
-  const { usuario, handleLogout } = useContext(AuthContext)
-  const token = usuario.token
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [postagem, setPostagem] = useState<Postagem>({} as Postagem)
 
-  const [isLoading, setIsLoading] = useState(false)
-  const [postagem, setPostagem] = useState<Postagem>({} as Postagem)
+    const { id } = useParams<{ id: string }>()
 
-  const buscarPorId = useCallback(async () => {
-    try {
-      await buscar(`/postagens/${id}`, setPostagem, {
-        headers: {
-          Authorization: `Bearer ${token}`
+    const { usuario, handleLogout } = useContext(AuthContext)
+    const token = usuario.token
+
+    const buscarPorId = useCallback(async (id: string) => {
+        try {
+            await buscar(`/postagens/${id}`, setPostagem, {
+                headers: {
+                    'Authorization': token
+                }
+            })
+        } catch (error: unknown) {
+            const err = error as Error;
+            if (err.toString().includes('401')) {
+                handleLogout()
+            }
         }
-      })
-    } catch (error: unknown) {
-      if (error instanceof Error && error.toString().includes("401")) {
-        handleLogout()
-      }
-    }
-  }, [id, token, handleLogout])
+    }, [token, handleLogout])
 
-  useEffect(() => {
-    if (!token) {
-      alert("Você precisa estar logado")
-      navigate("/")
-    }
-  }, [token, navigate])
-
-  useEffect(() => {
-    if (id) {
-      buscarPorId()
-    }
-  }, [id, buscarPorId])
-
-  async function deletarPostagem() {
-    setIsLoading(true)
-
-    try {
-      await deletar(`/postagens/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
+    useEffect(() => {
+        if (token === '') {
+            ToastAlerta('Você precisa estar logado', 'info')
+            navigate('/')
         }
-      })
+    }, [token, navigate])
 
-      alert("Postagem apagada com sucesso")
-      navigate("/home")
+    useEffect(() => {
+        if (id !== undefined) {
+            buscarPorId(id)
+        }
+    }, [id, buscarPorId])
 
-    } catch (error: unknown) {
-      if (error instanceof Error && error.toString().includes("401")) {
-        handleLogout()
-      } else {
-        alert("Erro ao deletar a postagem")
-      }
-    } finally {
-      setIsLoading(false)
+    async function deletarPostagem() {
+        setIsLoading(true)
+
+        try {
+            await deletar(`/postagens/${id}`, {
+                headers: {
+                    'Authorization': token
+                }
+            })
+
+            ToastAlerta('Postagem apagada com sucesso', 'sucesso')
+
+        } catch (error: unknown) {
+            const err = error as Error;
+            if (err.toString().includes('401')) {
+                handleLogout()
+            } else {
+                ToastAlerta('Erro ao deletar a postagem.', 'erro')
+            }
+        }
+
+        setIsLoading(false)
+        retornar()
     }
-  }
 
-  return (
-    <div className="container max-w-md mx-auto px-4">
-      <h1 className="text-4xl text-center my-6">Deletar Postagem</h1>
+    function retornar() {
+        navigate("/postagens")
+    }
+    
+    return (
+        <div className='container w-1/3 mx-auto'>
+            <h1 className='text-4xl text-center my-4'>Deletar Postagem</h1>
 
-      <p className="text-center font-semibold mb-6">
-        Você tem certeza de que deseja apagar a postagem a seguir?
-      </p>
+            <p className='text-center font-semibold mb-4'>
+                Você tem certeza de que deseja apagar a postagem a seguir?
+            </p>
 
-      <div className="border flex flex-col rounded-2xl overflow-hidden">
-        <header className="py-2 px-6 bg-indigo-600 text-white font-bold text-2xl">
-          Postagem
-        </header>
+            <div className='border flex flex-col rounded-2xl overflow-hidden justify-between'>
+                <header 
+                    className='py-2 px-6 bg-indigo-600 text-white font-bold text-2xl'>
+                    Postagem
+                </header>
+                <div className="p-4">
+                    <p className='text-xl h-full'>{postagem.titulo}</p>
+                    <p>{postagem.texto}</p>
+                </div>
+                <div className="flex">
+                    <button 
+                        className='text-slate-100 bg-red-400 hover:bg-red-600 w-full py-2'
+                        onClick={retornar}>
+                        Não
+                    </button>
+                    <button 
+                        className='w-full text-slate-100 bg-indigo-400 
+                        hover:bg-indigo-600 flex items-center justify-center'
+                        onClick={deletarPostagem}>
 
-        <div className="p-4">
-          {postagem.id ? (
-            <>
-              <p className="text-xl font-semibold">{postagem.titulo}</p>
-              <p className="mt-2">{postagem.texto}</p>
-            </>
-          ) : (
-            <p>Carregando postagem...</p>
-          )}
+                        { isLoading ? 
+                            <ClipLoader 
+                                color="#ffffff" 
+                                size={24}
+                            /> : 
+                            <span>Sim</span>
+                        }
+                        
+                    </button>
+                </div>
+            </div>
         </div>
-
-        <div className="flex">
-          <button
-            type="button"
-            className="w-full bg-red-400 hover:bg-red-600 text-white py-2"
-            onClick={() => navigate("/home")}
-          >
-            Não
-          </button>
-
-          <button
-            type="button"
-            className="w-full bg-indigo-400 hover:bg-indigo-600 text-white flex items-center justify-center"
-            onClick={deletarPostagem}
-          >
-            {isLoading ? <ClipLoader color="#fff" size={24} /> : "Sim"}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
+    )
 }
 
 export default DeletarPostagem
