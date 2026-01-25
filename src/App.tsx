@@ -10,8 +10,8 @@ import FormTema from './components/tema/formtema/FormTema'
 import ListaTemas from './components/tema/listatemas/ListaTemas'
 import { AuthProvider } from './contexts/AuthContext'
 import Cadastro from './pages/cadastro/Cadastro'
-import Home from './pages/home/Home.tsx'
 import Login from './pages/login/Login'
+import Home from './pages/home/Home'
 import Profil from './pages/profil/Profil'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -35,7 +35,7 @@ function App() {
 							<Route path="/cadastrarpostagem" element={<FormPostagem />} />
 							<Route path="/editarpostagem/:id" element={<FormPostagem />} />
 							<Route path="/deletarpostagem/:id" element={<DeletarPostagem />} />
-							<Route path="/perfil" element={<Profil />} />
+							<Route path="/profil" element={<Profil />} />
 						</Routes>
 					</div>
 					<Footer />
