@@ -1,10 +1,10 @@
-import { useState, useContext, useEffect, useCallback } from "react"
+import { useState, useContext, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { AuthContext } from "../../../contexts/AuthContext"
 import type Postagem from "../../../models/Postagem"
 import { buscar, deletar } from "../../../services/Service"
 import { ClipLoader } from "react-spinners"
-import { ToastAlerta } from "../../../utils/ToastAletrta"
+import { ToastAlerta } from "../../../utils/ToastAlerta"
 
 function DeletarPostagem() {
 
@@ -18,33 +18,32 @@ function DeletarPostagem() {
     const { usuario, handleLogout } = useContext(AuthContext)
     const token = usuario.token
 
-    const buscarPorId = useCallback(async (id: string) => {
+    async function buscarPorId(id: string) {
         try {
             await buscar(`/postagens/${id}`, setPostagem, {
                 headers: {
                     'Authorization': token
                 }
             })
-        } catch (error: unknown) {
-            const err = error as Error;
-            if (err.toString().includes('401')) {
+        } catch (error: any) {
+            if (error.toString().includes('401')) {
                 handleLogout()
             }
         }
-    }, [token, handleLogout])
+    }
 
     useEffect(() => {
         if (token === '') {
             ToastAlerta('Você precisa estar logado', 'info')
             navigate('/')
         }
-    }, [token, navigate])
+    }, [token])
 
     useEffect(() => {
         if (id !== undefined) {
             buscarPorId(id)
         }
-    }, [id, buscarPorId])
+    }, [id])
 
     async function deletarPostagem() {
         setIsLoading(true)
@@ -58,11 +57,10 @@ function DeletarPostagem() {
 
             ToastAlerta('Postagem apagada com sucesso', 'sucesso')
 
-        } catch (error: unknown) {
-            const err = error as Error;
-            if (err.toString().includes('401')) {
+        } catch (error: any) {
+            if (error.toString().includes('401')) {
                 handleLogout()
-            } else {
+            }else {
                 ToastAlerta('Erro ao deletar a postagem.', 'erro')
             }
         }

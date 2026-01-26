@@ -4,8 +4,8 @@ import { SyncLoader } from "react-spinners";
 import { AuthContext } from "../../../contexts/AuthContext";
 import type Postagem from "../../../models/Postagem";
 import { buscar } from "../../../services/Service";
+import { ToastAlerta } from "../../../utils/ToastAlerta";
 import CardPostagem from "../cardpostagem/Cardpostagem";
-
 
 function ListaPostagens() {
 
@@ -20,10 +20,10 @@ function ListaPostagens() {
 
     useEffect(() => {
         if (token === '') {
-            alert('Você precisa estar logado!')
+            ToastAlerta('Você precisa estar logado!', 'info')
             navigate('/')
         }
-    }, [token, navigate])
+    }, [token])
 
     useEffect(() => {
         buscarPostagens()    
@@ -37,15 +37,9 @@ function ListaPostagens() {
             await buscar('/postagens', setPostagens, {
                 headers: { Authorization: token }
             })
-        } catch (error: unknown) {
-            let errorMessage = '';
-            if (error instanceof Error) {
-                errorMessage = error.message;
-            } else {
-                errorMessage = String(error);
-            }
-            if (errorMessage.includes('401')) {
-                handleLogout();
+        } catch (error: any) {
+            if (error.toString().includes('401')) {
+                handleLogout()
             }
         }finally {
             setIsLoading(false)

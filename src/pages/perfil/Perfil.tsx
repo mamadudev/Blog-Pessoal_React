@@ -2,7 +2,7 @@ import { useContext, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 
 import { AuthContext } from "../../contexts/AuthContext"
-import { ToastAlerta } from "../../utils/ToastAletrta"
+import { ToastAlerta } from "../../utils/ToastAlerta"
 
 function Perfil() {
 	const navigate = useNavigate()
@@ -14,7 +14,7 @@ function Perfil() {
 			ToastAlerta("Você precisa estar logado", 'info')
 			navigate("/")
 		}
-	}, [usuario.token])
+	}, [navigate, usuario.token])
 
 	return (
 		<div className="flex justify-center mx-4">
@@ -27,7 +27,7 @@ function Perfil() {
 
 				<img
 					className="rounded-full w-56 mx-auto mt-[-8rem] border-8 border-white relative z-10"
-					src="/image.png"
+					src="image.png"
 					alt={`Foto de perfil de ${usuario.nome}`}
 				/>
 

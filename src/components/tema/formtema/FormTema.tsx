@@ -4,6 +4,7 @@ import { ClipLoader } from "react-spinners";
 import { AuthContext } from "../../../contexts/AuthContext";
 import type Tema from "../../../models/Tema";
 import { atualizar, buscar, cadastrar } from "../../../services/Service";
+import { ToastAlerta } from "../../../utils/ToastAlerta";
 
 function FormTema() {
 
@@ -23,16 +24,16 @@ function FormTema() {
             await buscar(`/temas/${id}`, setTema, {
                 headers: { Authorization: token }
             })
-        } catch (error: unknown) {
-            if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
-                handleLogout();
+        } catch (error: any) {
+            if (error.toString().includes('401')) {
+                handleLogout()
             }
         }
     }
 
     useEffect(() => {
         if (token === '') {
-            toastAlerta('Você precisa estar logado!', 'info')
+            ToastAlerta('Você precisa estar logado!', 'info')
             navigate('/')
         }
     }, [token])
@@ -63,26 +64,28 @@ function FormTema() {
                 await atualizar(`/temas`, tema, setTema, {
                     headers: { 'Authorization': token }
                 })
-                toastAlerta('O Tema foi atualizado com sucesso!', 'sucesso')
-            } catch (error: unknown) {
-                if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
+                ToastAlerta('O Tema foi atualizado com sucesso!', 'sucesso')
+            } catch (error: any) {
+                if (error.toString().includes('401')) {
                     handleLogout();
                 } else {
-                    toastAlerta('Erro ao atualizar o tema.', 'erro')
+                    ToastAlerta('Erro ao atualizar o tema.', 'erro')
                 }
+
             }
         } else {
             try {
                 await cadastrar(`/temas`, tema, setTema, {
                     headers: { 'Authorization': token }
                 })
-                toastAlerta('O Tema foi cadastrado com sucesso!', 'sucesso')
-            } catch (error: unknown) {
-                if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
+                ToastAlerta('O Tema foi cadastrado com sucesso!', 'sucesso')
+            } catch (error: any) {
+                if (error.toString().includes('401')) {
                     handleLogout();
                 } else {
-                    toastAlerta('Erro ao cadastrar o tema.', 'erro')
+                    ToastAlerta('Erro ao cadastrar o tema.', 'erro')
                 }
+
             }
         }
 
@@ -129,19 +132,3 @@ function FormTema() {
 }
 
 export default FormTema;
-
-function toastAlerta(mensagem: string, tipo: string) {
-    switch (tipo) {
-        case 'sucesso':
-            alert(`✅ ${mensagem}`);
-            break;
-        case 'erro':
-            alert(`❌ ${mensagem}`);
-            break;
-        case 'info':
-            alert(`ℹ️ ${mensagem}`);
-            break;
-        default:
-            alert(mensagem);
-    }
-}

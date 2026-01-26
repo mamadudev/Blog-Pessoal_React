@@ -3,18 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import type Usuario from "../../models/Usuario";
 import { cadastrarUsuario } from "../../services/Service";
-import { ToastAlerta } from "../../utils/ToastAletrta";
-
-
+import { ToastAlerta } from "../../utils/ToastAlerta";
 
 function Cadastro() {
 
   const navigate = useNavigate()
   
-  function retornar(){
-    navigate('/')
-  }
-
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const[confirmarSenha, setConfirmarSenha] = useState<string>("")
@@ -32,6 +26,10 @@ function Cadastro() {
       retornar()
     }
   }, [usuario])
+
+  function retornar(){
+    navigate('/')
+  }
 
   function atualizarEstado(e: ChangeEvent<HTMLInputElement>){
     setUsuario({
@@ -55,7 +53,7 @@ function Cadastro() {
       try{
         await cadastrarUsuario(`/usuarios/cadastrar`, usuario, setUsuario)
         ToastAlerta('Usuário cadastrado com sucesso!', 'sucesso')
-      }catch{
+      }catch(error){
         ToastAlerta('Erro ao cadastrar o usuário!', 'erro')
       }
     }else{

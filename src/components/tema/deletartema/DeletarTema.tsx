@@ -4,7 +4,7 @@ import { ClipLoader } from "react-spinners"
 import { AuthContext } from "../../../contexts/AuthContext"
 import type Tema from "../../../models/Tema"
 import { buscar, deletar } from "../../../services/Service"
-import { ToastAlerta } from "../../../utils/ToastAletrta"
+import { ToastAlerta } from "../../../utils/ToastAlerta"
 
 function DeletarTema() {
 
@@ -26,8 +26,8 @@ function DeletarTema() {
                     'Authorization': token
                 }
             })
-        } catch (error: unknown) {
-            if (error instanceof Error && error.toString().includes('401')) {
+        } catch (error: any) {
+            if (error.toString().includes('401')) {
                 handleLogout()
             }
         }
@@ -58,10 +58,10 @@ function DeletarTema() {
 
             ToastAlerta('Tema deletado com sucesso', 'sucesso')
 
-        } catch (error: unknown) {
-            if (error instanceof Error && error.toString().includes('401')) {
+        } catch (error: any) {
+            if (error.toString().includes('401')) {
                 handleLogout()
-            } else {
+            }else {
                 ToastAlerta('Erro ao deletar o tema.', 'erro')
             }
         }

@@ -1,4 +1,3 @@
-
 import { FacebookLogoIcon, InstagramLogoIcon, LinkedinLogoIcon } from "@phosphor-icons/react"
 import { useContext, type ReactNode } from "react"
 import { AuthContext } from "../../contexts/AuthContext"
@@ -6,7 +5,7 @@ import { AuthContext } from "../../contexts/AuthContext"
 
 function Footer() {
 
-    const data = new Date().getFullYear()
+    let data = new Date().getFullYear()
 
     const { usuario } = useContext(AuthContext)
 

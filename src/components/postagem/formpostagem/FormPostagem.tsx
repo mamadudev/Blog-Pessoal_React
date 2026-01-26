@@ -1,11 +1,11 @@
-import { useContext, useEffect, useState, useCallback, type ChangeEvent, type FormEvent } from "react";
+import { useContext, useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { AuthContext } from "../../../contexts/AuthContext";
 import type Postagem from "../../../models/Postagem";
 import type Tema from "../../../models/Tema";
 import { atualizar, buscar, cadastrar } from "../../../services/Service";
-import { ToastAlerta } from "../../../utils/ToastAletrta";
+import { ToastAlerta } from "../../../utils/ToastAlerta";
 
 function FormPostagem() {
 
@@ -24,48 +24,48 @@ function FormPostagem() {
 
     const { id } = useParams<{ id: string }>()
 
-    const buscarPostagemPorId = useCallback(async (id: string) => {
+    async function buscarPostagemPorId(id: string) {
         try {
             await buscar(`/postagens/${id}`, setPostagem, {
                 headers: { Authorization: token }
             })
-        } catch (error: unknown) {
-            if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
+        } catch (error: any) {
+            if (error.toString().includes('401')) {
                 handleLogout()
             }
         }
-    }, [token, handleLogout]);
+    }
 
     async function buscarTemaPorId(id: string) {
         try {
             await buscar(`/temas/${id}`, setTema, {
                 headers: { Authorization: token }
             })
-        } catch (error: unknown) {
-            if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
+        } catch (error: any) {
+            if (error.toString().includes('401')) {
                 handleLogout()
             }
         }
     }
 
-    const buscarTemas = useCallback(async () => {
+    async function buscarTemas() {
         try {
             await buscar('/temas', setTemas, {
                 headers: { Authorization: token }
             })
-        } catch (error: unknown) {
-            if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
+        } catch (error: any) {
+            if (error.toString().includes('401')) {
                 handleLogout()
             }
         }
-    }, [token, handleLogout]);
+    }
 
     useEffect(() => {
         if (token === '') {
             ToastAlerta('Você precisa estar logado', 'info');
             navigate('/');
         }
-    }, [navigate, token])
+    }, [token])
 
     useEffect(() => {
         buscarTemas()
@@ -73,25 +73,22 @@ function FormPostagem() {
         if (id !== undefined) {
             buscarPostagemPorId(id)
         }
-    }, [buscarPostagemPorId, buscarTemas, id])
+    }, [id])
 
-
+    useEffect(() => {
+        setPostagem({
+            ...postagem,
+            tema: tema,
+        })
+    }, [tema])
 
     function atualizarEstado(e: ChangeEvent<HTMLInputElement>) {
         setPostagem({
             ...postagem,
             [e.target.name]: e.target.value,
+            tema: tema,
             usuario: usuario,
         });
-    }
-
-    function handleTemaChange(e: ChangeEvent<HTMLSelectElement>) {
-        const temaId = e.currentTarget.value;
-        buscarTemaPorId(temaId);
-        setPostagem((prev) => ({
-            ...prev,
-            tema: temas.find((t) => String(t.id) === temaId) || prev.tema,
-        }));
     }
 
     function retornar() {
@@ -112,8 +109,8 @@ function FormPostagem() {
 
                 ToastAlerta('Postagem atualizada com sucesso', 'sucesso')
 
-            } catch (error: unknown) {
-                if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
+            } catch (error: any) {
+                if (error.toString().includes('401')) {
                     handleLogout()
                 } else {
                     ToastAlerta('Erro ao atualizar a Postagem', 'erro')
@@ -130,8 +127,8 @@ function FormPostagem() {
 
                 ToastAlerta('Postagem cadastrada com sucesso', 'sucesso');
 
-            } catch (error: unknown) {
-                if (error && typeof error === 'object' && 'toString' in error && typeof error.toString === 'function' && error.toString().includes('401')) {
+            } catch (error: any) {
+                if (error.toString().includes('401')) {
                     handleLogout()
                 } else {
                     ToastAlerta('Erro ao cadastrar a Postagem', 'erro');
@@ -145,6 +142,18 @@ function FormPostagem() {
 
     const carregandoTema = tema.descricao === '';
 
+
+    function handleTemaChange(e: ChangeEvent<HTMLSelectElement>) {
+        const value = e.target.value
+
+        if (value) {
+            const temaEncontrado = temas.find((tema) => tema.id === Number(value))
+            
+            if (temaEncontrado) {
+                setTema(temaEncontrado)
+            }
+        }
+    }
 
     return (
         <div className="container flex flex-col mx-auto items-center">
@@ -187,10 +196,14 @@ function FormPostagem() {
                         onChange={handleTemaChange}
                         value={postagem.tema?.id || ''}
                     >
-                        <option value="" disabled>Selecione um Tema</option>
+                        <option value="" selected disabled>Selecione um Tema</option>
+                        
                         {temas.map((tema) => (
-                            <option value={tema.id} key={tema.id}>{tema.descricao}</option>
+                            <>
+                                <option value={tema.id} >{tema.descricao}</option>
+                            </>
                         ))}
+
                     </select>
                 </div>
                 <button 
